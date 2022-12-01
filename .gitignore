@@ -1,0 +1,16 @@
+.bash_history
+.bashrc
+.cache/
+.cloud-locale-test.skip
+.lesshst
+.profile
+.selected_editor
+.ssh/
+.viminfo
+.wget-hsts
+leaderboard.json
+slackbot.log
+*.secret
+snap/
+stats
+stats.old
