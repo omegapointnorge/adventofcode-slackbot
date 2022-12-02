@@ -54,7 +54,7 @@ function scoreboard() {
 		fi
 
 		# prettify
-		echo "${emoji} *$name* Poeng: $points, Stjerner: $stars\n"
+		echo "${emoji} *$name* Poeng: $points, :star: $stars\n"
 
 		((index=$index+1))
 	done
@@ -78,7 +78,7 @@ else
 	
 	curl -fsS $webhook \
 		-X POST -H 'Content-type: application/json' \
-		--data "{ \"text\": \"Noen har klart en ny oppgave! Ny poengoversikt:\n$(scoreboard)\" }" \
+		--data "{ \"text\": \"Noen har klart en ny oppgave! Ny poengoversikt:\n\n$(scoreboard)\" }" \
 		--output /dev/null
 fi
 
