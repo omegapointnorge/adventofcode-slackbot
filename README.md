@@ -2,6 +2,8 @@
 
 This is a script checks a leaderboard every 15 minutes and if there is a change since last time it posts the scores to a slack channel.
 
+I'm currently rewriting this to Go and Azure Function, see the `feature/azure-go-function` branch.
+
 
 ## Secrets
 
