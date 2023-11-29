@@ -1,22 +1,12 @@
 # AdventOfCode Slackbot
 
-This is a script checks a leaderboard every 15 minutes and if there is a change since last time it posts the scores to a slack channel.
+This is a slackbot that will post a message to our `#advent-of-code` slack
+channel when the leaderboard has been updated. It is written as an AWS Lambda
+in Go, and runs on a fixed schedule. Previously every 2 hours has worked out
+quite nice, so it doesn't spam too often during workdays.
 
 
-## Secrets
+## Work in progress
 
-The script needs two secrets, which will be read from a file.
-
-1. `slack-webhook.secret` should contain the incoming webhook url for slack.
-2. `session-key.secret` should contain a key from the adventofcode session cookie.
-
-
-## Cronjob
-
-The following cron expression will run the script every 15 minutes every day in December until the 25th:
-
-```
-*/15 * 1-25 12 * /root/slackbot.sh >> /root/slackbot.log
-```
-
-Use the `crontab -e` command to add it to your server.
+The program is working locally, but it needs to handle state so that it only
+post when there is a change. Also it needs to handle credentials.
