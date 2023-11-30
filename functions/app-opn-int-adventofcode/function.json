@@ -5,12 +5,6 @@
       "type": "timerTrigger",
       "direction": "in",
       "schedule": "0 */2 * 12 * *"
-    },
-    {
-      "dataType": "binary",
-      "type": "httpTrigger",
-      "name": "req",
-      "direction": "in"
     }
   ]
 }
