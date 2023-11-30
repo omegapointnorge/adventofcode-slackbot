@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"sort"
 	"time"
 )
@@ -163,7 +164,10 @@ func (lb *Leaderboard) FormatText() string {
 	return text
 }
 
-func main() {
+func handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "Hello, World!")
+	return
+
 	client := &http.Client{Timeout: time.Second * 10}
 	slackBot := NewSlackBot(client)
 
@@ -202,4 +206,14 @@ func main() {
 	fmt.Println("Successfully posted the leaderboard to slack")
 
 	// TODO: Update leaderboard state
+}
+
+func main() {
+	port, ok := os.LookupEnv("FUNCTIONS_CUSTOMHANDLER_PORT")
+	if !ok {
+		port = "8080"
+	}
+	addr := fmt.Sprintf(":%s", port)
+	http.HandleFunc("/StartSlackBot", handler)
+	http.ListenAndServe(addr, nil)
 }
