@@ -1,3 +1,4 @@
+handler
 bin
 obj
 csx
@@ -25,10 +26,10 @@ local.settings.json
 node_modules
 dist
 
-# Local python packages
+# Local pyton packages
 .python_packages/
 
-# Python Environments
+# Pyton Environments
 .env
 .venv
 env/
