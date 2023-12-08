@@ -11,6 +11,7 @@ The script needs two secrets, which will be read from a file.
 
 1. `slack-webhook.secret` should contain the incoming webhook url for slack.
 2. `session-key.secret` should contain a key from the adventofcode session cookie.
+3. `gpt-api-key.secret` should contain an api key for a valid OpenAI GPT subscription
 
 
 ## Cronjob
