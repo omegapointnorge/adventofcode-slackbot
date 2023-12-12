@@ -3,6 +3,7 @@
 year=$(date +%Y)
 webhook=$(cat slack-webhook.secret)
 sessionkey=$(cat session-key.secret)
+gptApiKey=$(cat gpt-api-key.secret)
 leaderboard="395034"
 
 function fetch_leaderboard() {
@@ -13,6 +14,37 @@ function fetch_leaderboard() {
 	curl -fsS https://adventofcode.com/$year/leaderboard/private/view/$leaderboard.json \
 		--cookie "session=$sessionkey" \
 		--output $tmpfile && mv $tmpfile leaderboard.json
+}
+
+function generate_commentary() {
+	gptEndpoint="https://api.openai.com/v1/chat/completions"
+
+    # Create a JSON request payload with the necessary prompts
+    gptRequestPayload=$(jq -n --arg stats_old "$(cat stats.old)" --arg stats_new "$(cat stats)" --arg leaderboard_json "$(cat leaderboard.json)" '{
+        "model": "gpt-4",
+        "messages": [
+            {
+                "role": "system",
+                "content": "We are participating in this years Advent Of Code at work. You are a slackbot for our work channel. Provide colour commentary on leaderboard changes. Avoid inappropriate content and errors. Dont post user IDs"
+            },
+            {
+                "role": "user",
+                "content": "Here are the old stats, new stats and current leaderboard:\n\($stats_old)\n\($stats_new)\n\($leaderboard_json)"
+            }
+        ]
+    }')
+
+    # Send the request to the API
+    apiResponse=$(curl --location --request POST $gptEndpoint \
+                    --header "Authorization: Bearer $gptApiKey" \
+                    --header "Content-Type: application/json" \
+                    --data-raw "$gptRequestPayload")
+
+    # Extract content using jq
+    commentary=$(echo "$apiResponse" | jq -r '.choices[0].message.content')
+
+    # Print the extracted commentary
+    echo "$commentary"
 }
 
 function scoreboard() {
@@ -60,15 +92,12 @@ function scoreboard() {
 	done
 }
 
-
 # fetch latest data
 echo "$(date) fetching leaderboard data"
 fetch_leaderboard
 
-
 # create stats file
 cat leaderboard.json | jq '.members[] | (.local_score, ":", .stars, ":", .id, "\n")' -j | sort -rn | grep -v '0:0' > stats
-
 
 # compare with old stats
 if cmp -s "stats" "stats.old"; then
@@ -76,12 +105,21 @@ if cmp -s "stats" "stats.old"; then
 else
 	echo "$(date) > detected a change in leaderboard, notifying slack"
 	
-	curl -fsS $webhook \
-		-X POST -H 'Content-type: application/json' \
-		--data "{ \"text\": \"Noen har klart en ny oppgave! Ny poengoversikt:\n\n$(scoreboard)\" }" \
-		--output /dev/null
+    # Fetch commentary
+    commentary=$(generate_commentary)
+
+    # Check if commentary is not empty and not null
+    if [ -z "$commentary" ] || [ "$commentary" == "null" ]; then
+        echo "Commentary generation failed or returned null. Setting commentary to an empty string."
+        commentary=""
+    fi
+
+	# Post update to slack
+    curl -fsS $webhook \
+        -X POST -H 'Content-type: application/json' \
+        --data "{ \"text\": \"Noen har klart en ny oppgave! Ny poengoversikt:\n\n$(scoreboard)\n\n$commentary\" }" \
+        --output /dev/null
 fi
 
-
-# don't forget to save the state
+# Don't forget to save the state
 cp stats stats.old
